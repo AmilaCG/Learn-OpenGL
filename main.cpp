@@ -2,11 +2,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void init_opengl();
 void render_loop();
 void deinit_opengl();
+void compile_and_link_shaders();
 
 float triangleVertices[] = {
     -0.5f, -0.5f, 0.0f, // left
@@ -68,7 +72,7 @@ int main()
         return -1;
     }
 
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -92,25 +96,70 @@ int main()
 
 void init_opengl()
 {
-    // Creating a vertex array object
-    glGenVertexArrays(1, &vao);
+    compile_and_link_shaders();
 
-    // Bind vertex array object
+    glGenVertexArrays(1, &vao); // Generate vertex array object
+    glGenBuffers(1, &vbo);  // Generate vertex buffer object
+    glGenBuffers(1, &ebo);  // Generate element buffer object
+
+    // Bind vertex array object first and then bind and set vertex buffers
     glBindVertexArray(vao);
-
-    // Bind vertex buffer object
-    glGenBuffers(1, &vbo);
 
     // Bind to the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     // Copy vertex data into the buffer
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     // Copy index array to an element buffer
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+    // Telling OpenGL how to interpret vertex data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    /* The following is copied from the learopengl's source code:
+
+       glBindBuffer(GL_ARRAY_BUFFER, 0); is allowed, the call to glVertexAttribPointer 
+       registered VBO as the vertex attribute's bound vertex buffer object so afterwards 
+       we can safely unbind.
+
+       Remember: Do NOT unbind the EBO while a VAO is active as the bound element buffer 
+       object IS stored in the VAO; keep the EBO bound.
+       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); <- DO NOT DO THIS HERE
+
+       You can unbind the VAO afterwards so other VAO calls won't accidentally modify this 
+       VAO, but this rarely happens. Modifying other VAOs requires a call to glBindVertexArray 
+       anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+       glBindVertexArray(0);
+    */
+
+    // Draw in wireframe mode
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+void render_loop()
+{
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Activate the shader program. Every shader and rendering call after this line will
+    // use this program object.
+    glUseProgram(shaderProgram);
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void deinit_opengl()
+{
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
+    glDeleteProgram(shaderProgram);
+}
+
+void compile_and_link_shaders()
+{
     // Vertex shader object
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -157,53 +206,9 @@ void init_opengl()
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
 
-    // Activate the shader program. Every shader and rendering call after this line will
-    // use this program object.
-    glUseProgram(shaderProgram);
-
     // We no longer will need shader objects once they got linked to the program
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
-    // Telling OpenGL how to interpret vertex data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    /* The following is copied from the learopengl's source code:
-
-       glBindBuffer(GL_ARRAY_BUFFER, 0); is allowed, the call to glVertexAttribPointer 
-       registered VBO as the vertex attribute's bound vertex buffer object so afterwards 
-       we can safely unbind.
-
-       Remember: Do NOT unbind the EBO while a VAO is active as the bound element buffer 
-       object IS stored in the VAO; keep the EBO bound.
-       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); <- DO NOT DO THIS HERE
-
-       You can unbind the VAO afterwards so other VAO calls won't accidentally modify this 
-       VAO, but this rarely happens. Modifying other VAOs requires a call to glBindVertexArray 
-       anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-       glBindVertexArray(0);
-    */
-
-    // Draw in wireframe mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-}
-
-void render_loop()
-{
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(shaderProgram);
-    glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-}
-
-void deinit_opengl()
-{
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteProgram(shaderProgram);
 }
 
 void processInput(GLFWwindow* window)
