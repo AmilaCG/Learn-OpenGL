@@ -2,15 +2,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Shader.h"
+
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+#define V_SHADER_FILE_PATH "shaders/shader.vert"
+#define F_SHADER_FILE_PATH "shaders/shader.frag"
+
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-void init_opengl();
-void render_loop();
-void deinit_opengl();
-void compile_and_link_shaders();
+void initOpengl();
+void renderLoop();
+void deinitOpengl();
 
 float vertices[] = {
     // positions         // colors
@@ -19,68 +23,7 @@ float vertices[] = {
      0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
 };
 
-// Passing color values from vertex attributes
-const char* vertexShaderSource =
-    "#version 330 core                                  \n"
-    "layout (location = 0) in vec3 aPos;                \n"
-    "layout (location = 1) in vec3 aColor;              \n"
-    "out vec3 ourColor;                                 \n"
-    "void main()                                        \n"
-    "{                                                  \n"
-    "   gl_Position = vec4(aPos, 1.0);                  \n"
-    "   ourColor = aColor;                              \n"
-    "}                                                  \0";
-
-const char* fragmentShaderSource =
-    "#version 330 core                                  \n"
-    "out vec4 FragColor;                                \n"
-    "in vec3 ourColor;                                  \n"
-    "void main()                                        \n"
-    "{                                                  \n"
-    "   FragColor = vec4(ourColor, 1.0);                \n"
-    "}                                                  \0";
-
-// Passing a value from vertex shader to fragment shader
-//const char* vertexShaderSource = 
-//    "#version 330 core                                  \n"
-//    "layout (location = 0) in vec3 aPos;                \n"
-//    "out vec4 vertexColor;                              \n"
-//    "void main()                                        \n"
-//    "{                                                  \n"
-//    "   gl_Position = vec4(aPos, 1.0);                  \n"
-//    "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);         \n"
-//    "}                                                  \0";
-//
-//const char* fragmentShaderSource =
-//    "#version 330 core                                  \n"
-//    "out vec4 FragColor;                                \n"
-//    "in vec4 vertexColor;                               \n"
-//    "void main()                                        \n"
-//    "{                                                  \n"
-//    "   FragColor = vertexColor;                        \n"
-//    "}                                                  \0";
-
-// Passing color value from the code
-//const char* vertexShaderSource =
-//"#version 330 core                                  \n"
-//"layout (location = 0) in vec3 aPos;                \n"
-//"out vec4 vertexColor;                              \n"
-//"void main()                                        \n"
-//"{                                                  \n"
-//"   gl_Position = vec4(aPos, 1.0);                  \n"
-//"   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);         \n"
-//"}                                                  \0";
-//
-//const char* fragmentShaderSource =
-//"#version 330 core                                  \n"
-//"out vec4 FragColor;                                \n"
-//"uniform vec4 outColor;                             \n"
-//"void main()                                        \n"
-//"{                                                  \n"
-//"   FragColor = outColor;                           \n"
-//"}                                                  \0";
-
-unsigned int shaderProgram; // Shader program object
+Shader* ourShader;
 unsigned int vao; // Vertex array object
 unsigned int vbo; // Vertex buffer object
 
@@ -108,29 +51,29 @@ int main()
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-    init_opengl();
+    initOpengl();
 
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
 
-        render_loop();
+        renderLoop();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    deinit_opengl();
+    deinitOpengl();
     glfwTerminate();
 
     return 0;
 }
 
-void init_opengl()
+void initOpengl()
 {
-    compile_and_link_shaders();
+    ourShader = new Shader(V_SHADER_FILE_PATH, F_SHADER_FILE_PATH);
 
     glGenVertexArrays(1, &vao); // Generate vertex array object
     glGenBuffers(1, &vbo);  // Generate vertex buffer object
@@ -155,80 +98,24 @@ void init_opengl()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
-void render_loop()
+void renderLoop()
 {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    //float timeValue = glfwGetTime();
-    //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-    //int vertexColorLocation = glGetUniformLocation(shaderProgram, "outColor");
-    glUseProgram(shaderProgram);
-    //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+    ourShader->use();
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void deinit_opengl()
+void deinitOpengl()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteProgram(shaderProgram);
-}
-
-void compile_and_link_shaders()
-{
-    // Vertex shader object
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    // Set the source and compile the vertex shader
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Check compilation status
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // Fragment shader object
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Set source and compile the fragment shader
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    shaderProgram = glCreateProgram();
-
-    // Attach vertex and fragment shaders to the program and link them
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
-    // We no longer will need shader objects once they got linked to the program
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    delete(ourShader);
+    ourShader = nullptr;
 }
 
 void processInput(GLFWwindow* window)
@@ -239,7 +126,7 @@ void processInput(GLFWwindow* window)
     }
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
