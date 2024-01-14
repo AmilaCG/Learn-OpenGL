@@ -12,10 +12,19 @@ void render_loop();
 void deinit_opengl();
 void compile_and_link_shaders();
 
+//float triangleVertices[] = {
+//    -0.5f, -0.5f, 0.0f, // left
+//     0.5f, -0.5f, 0.0f, // right
+//     0.0f,  0.5f, 0.0f  // top
+//};
+
 float triangleVertices[] = {
-    -0.5f, -0.5f, 0.0f, // left
-     0.5f, -0.5f, 0.0f, // right
-     0.0f,  0.5f, 0.0f  // top
+     -0.75f, 0.25f, 0.0f, // left tri - left
+     -0.25f, 0.25f, 0.0f, // left tri - right
+     -0.5f, 0.75f, 0.0f, // left tri - top
+     0.25f, 0.25f, 0.0f, // right tri - left
+     0.75f, 0.25f, 0.0f, // right tri - right
+     0.5f, 0.75f, 0.0f // right tri - top
 };
 
 float vertices[] = {
@@ -100,7 +109,7 @@ void init_opengl()
 
     glGenVertexArrays(1, &vao); // Generate vertex array object
     glGenBuffers(1, &vbo);  // Generate vertex buffer object
-    glGenBuffers(1, &ebo);  // Generate element buffer object
+    //glGenBuffers(1, &ebo);  // Generate element buffer object
 
     // Bind vertex array object first and then bind and set vertex buffers
     glBindVertexArray(vao);
@@ -108,11 +117,11 @@ void init_opengl()
     // Bind to the vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     // Copy vertex data into the buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    // Copy index array to an element buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    //// Copy index array to an element buffer
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Telling OpenGL how to interpret vertex data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -147,14 +156,15 @@ void render_loop()
     // use this program object.
     glUseProgram(shaderProgram);
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void deinit_opengl()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
+    //glDeleteBuffers(1, &ebo);
     glDeleteProgram(shaderProgram);
 }
 
