@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;D:\Learning\OpenGL\learnopengl.com\Learn Opengl\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\vclib\glfw-3.3.9.bin.WIN64\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;D:\Learning\OpenGL\learnopengl.com\Learn Opengl\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\vclib\glfw-3.3.9.bin.WIN64\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -137,9 +137,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="external_src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="src\glad.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h" />
