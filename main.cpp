@@ -18,10 +18,13 @@ void compile_and_link_shaders();
 //     0.0f,  0.5f, 0.0f  // top
 //};
 
-float triangleVertices[] = {
+float leftTriangleVertices[] = {
      -0.75f, 0.25f, 0.0f, // left tri - left
      -0.25f, 0.25f, 0.0f, // left tri - right
-     -0.5f, 0.75f, 0.0f, // left tri - top
+     -0.5f, 0.75f, 0.0f // left tri - top
+};
+
+float rightTriangleVerticies[] = {
      0.25f, 0.25f, 0.0f, // right tri - left
      0.75f, 0.25f, 0.0f, // right tri - right
      0.5f, 0.75f, 0.0f // right tri - top
@@ -54,10 +57,12 @@ const char* fragmentShaderSource =
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);       \n"
     "}                                                  \0";
 
-unsigned int shaderProgram; // Shader program object
-unsigned int vao; // Vertex array object
-unsigned int vbo; // Vertex buffer object
-unsigned int ebo; // Element buffer object
+unsigned int shaderProgram;
+unsigned int vaoLeft;
+unsigned int vaoRight;
+unsigned int vboLeft; 
+unsigned int vboRight;
+unsigned int ebo;
 
 int main()
 {
@@ -107,21 +112,30 @@ void init_opengl()
 {
     compile_and_link_shaders();
 
-    glGenVertexArrays(1, &vao); // Generate vertex array object
-    glGenBuffers(1, &vbo);  // Generate vertex buffer object
+    glGenVertexArrays(1, &vaoLeft); // Generate vertex array object
+    glGenVertexArrays(1, &vaoRight); // Generate vertex array object
+    glGenBuffers(1, &vboLeft);  // Generate vertex buffer object
+    glGenBuffers(1, &vboRight);  // Generate vertex buffer object
     //glGenBuffers(1, &ebo);  // Generate element buffer object
 
     // Bind vertex array object first and then bind and set vertex buffers
-    glBindVertexArray(vao);
+    glBindVertexArray(vaoLeft);
 
     // Bind to the vertex buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vboLeft);
     // Copy vertex data into the buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(leftTriangleVertices), leftTriangleVertices, GL_STATIC_DRAW);
 
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    //// Copy index array to an element buffer
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // Telling OpenGL how to interpret vertex data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(vaoRight);
+
+    // Bind to the vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vboRight);
+    // Copy vertex data into the buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rightTriangleVerticies), rightTriangleVerticies, GL_STATIC_DRAW);
 
     // Telling OpenGL how to interpret vertex data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -155,15 +169,18 @@ void render_loop()
     // Activate the shader program. Every shader and rendering call after this line will
     // use this program object.
     glUseProgram(shaderProgram);
-    glBindVertexArray(vao);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(vaoLeft);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(vaoRight);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void deinit_opengl()
 {
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vaoLeft);
+    glDeleteVertexArrays(1, &vaoRight);
+    glDeleteBuffers(1, &vboLeft);
+    glDeleteBuffers(1, &vboRight);
     //glDeleteBuffers(1, &ebo);
     glDeleteProgram(shaderProgram);
 }
