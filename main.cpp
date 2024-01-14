@@ -12,43 +12,77 @@ void render_loop();
 void deinit_opengl();
 void compile_and_link_shaders();
 
-float triangleVertices[] = {
-    -0.5f, -0.5f, 0.0f, // left
-     0.5f, -0.5f, 0.0f, // right
-     0.0f,  0.5f, 0.0f  // top
-};
-
 float vertices[] = {
-     0.5f,  0.5f, 0.0f,  // top right
-     0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left 
-};
-unsigned int indices[] = {  // note that we start from 0!
-    0, 1, 3,   // first triangle
-    1, 2, 3    // second triangle
+    // positions         // colors
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
 };
 
-const char* vertexShaderSource = 
+// Passing color values from vertex attributes
+const char* vertexShaderSource =
     "#version 330 core                                  \n"
     "layout (location = 0) in vec3 aPos;                \n"
+    "layout (location = 1) in vec3 aColor;              \n"
+    "out vec3 ourColor;                                 \n"
     "void main()                                        \n"
     "{                                                  \n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = vec4(aPos, 1.0);                  \n"
+    "   ourColor = aColor;                              \n"
     "}                                                  \0";
 
 const char* fragmentShaderSource =
     "#version 330 core                                  \n"
     "out vec4 FragColor;                                \n"
+    "in vec3 ourColor;                                  \n"
     "void main()                                        \n"
     "{                                                  \n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);       \n"
+    "   FragColor = vec4(ourColor, 1.0);                \n"
     "}                                                  \0";
+
+// Passing a value from vertex shader to fragment shader
+//const char* vertexShaderSource = 
+//    "#version 330 core                                  \n"
+//    "layout (location = 0) in vec3 aPos;                \n"
+//    "out vec4 vertexColor;                              \n"
+//    "void main()                                        \n"
+//    "{                                                  \n"
+//    "   gl_Position = vec4(aPos, 1.0);                  \n"
+//    "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);         \n"
+//    "}                                                  \0";
+//
+//const char* fragmentShaderSource =
+//    "#version 330 core                                  \n"
+//    "out vec4 FragColor;                                \n"
+//    "in vec4 vertexColor;                               \n"
+//    "void main()                                        \n"
+//    "{                                                  \n"
+//    "   FragColor = vertexColor;                        \n"
+//    "}                                                  \0";
+
+// Passing color value from the code
+//const char* vertexShaderSource =
+//"#version 330 core                                  \n"
+//"layout (location = 0) in vec3 aPos;                \n"
+//"out vec4 vertexColor;                              \n"
+//"void main()                                        \n"
+//"{                                                  \n"
+//"   gl_Position = vec4(aPos, 1.0);                  \n"
+//"   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);         \n"
+//"}                                                  \0";
+//
+//const char* fragmentShaderSource =
+//"#version 330 core                                  \n"
+//"out vec4 FragColor;                                \n"
+//"uniform vec4 outColor;                             \n"
+//"void main()                                        \n"
+//"{                                                  \n"
+//"   FragColor = outColor;                           \n"
+//"}                                                  \0";
 
 unsigned int shaderProgram; // Shader program object
 unsigned int vao; // Vertex array object
 unsigned int vbo; // Vertex buffer object
-unsigned int ebo; // Element buffer object
 
 int main()
 {
@@ -100,7 +134,6 @@ void init_opengl()
 
     glGenVertexArrays(1, &vao); // Generate vertex array object
     glGenBuffers(1, &vbo);  // Generate vertex buffer object
-    glGenBuffers(1, &ebo);  // Generate element buffer object
 
     // Bind vertex array object first and then bind and set vertex buffers
     glBindVertexArray(vao);
@@ -110,29 +143,13 @@ void init_opengl()
     // Copy vertex data into the buffer
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    // Copy index array to an element buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // Telling OpenGL how to interpret vertex data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    /* The following is copied from the learopengl's source code:
-
-       glBindBuffer(GL_ARRAY_BUFFER, 0); is allowed, the call to glVertexAttribPointer 
-       registered VBO as the vertex attribute's bound vertex buffer object so afterwards 
-       we can safely unbind.
-
-       Remember: Do NOT unbind the EBO while a VAO is active as the bound element buffer 
-       object IS stored in the VAO; keep the EBO bound.
-       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); <- DO NOT DO THIS HERE
-
-       You can unbind the VAO afterwards so other VAO calls won't accidentally modify this 
-       VAO, but this rarely happens. Modifying other VAOs requires a call to glBindVertexArray 
-       anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-       glBindVertexArray(0);
-    */
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Draw in wireframe mode
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -143,18 +160,21 @@ void render_loop()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Activate the shader program. Every shader and rendering call after this line will
-    // use this program object.
+    //float timeValue = glfwGetTime();
+    //float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+    //int vertexColorLocation = glGetUniformLocation(shaderProgram, "outColor");
     glUseProgram(shaderProgram);
+    //glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void deinit_opengl()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
     glDeleteProgram(shaderProgram);
 }
 
