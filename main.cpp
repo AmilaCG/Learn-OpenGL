@@ -7,8 +7,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-#define V_SHADER_FILE_PATH "shaders/shader.vert"
-#define F_SHADER_FILE_PATH "shaders/shader.frag"
+#define V_SHADER_FILE_PATH "shaders/part3.vert"
+#define F_SHADER_FILE_PATH "shaders/part3.frag"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -104,6 +104,7 @@ void renderLoop()
     glClear(GL_COLOR_BUFFER_BIT);
 
     ourShader->use();
+    ourShader->setFloat("offset", 0.25f);
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
