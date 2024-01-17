@@ -35,12 +35,8 @@ unsigned int vao; // Vertex array object
 unsigned int vbo; // Vertex buffer object
 unsigned int ebo; // Element buffer object
 
-int imgWidth;
-int imgHeight;
-int nrChannels;
-unsigned char* imgData;
-
-unsigned int texture; // Texture object
+unsigned int texture; // Container texture object
+unsigned int texture2; // awesomeface texture
 
 int main()
 {
@@ -68,13 +64,6 @@ int main()
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-    imgData = stbi_load("textures/container.jpg", &imgWidth, &imgHeight, &nrChannels, 0);
-    if (!imgData)
-    {
-        std::cout << "Failed to load texture image" << std::endl;
-        return -1;
-    }
-
     initOpengl();
 
     while (!glfwWindowShouldClose(window))
@@ -101,6 +90,7 @@ void initOpengl()
     glGenBuffers(1, &vbo);  // Generate vertex buffer object
     glGenBuffers(1, &ebo);
     glGenTextures(1, &texture);
+    glGenTextures(1, &texture2);
 
     // Bind vertex array object first and then bind and set vertex buffers
     glBindVertexArray(vao);
@@ -125,11 +115,8 @@ void initOpengl()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // Draw in wireframe mode
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+    // Setting up the container texture
     glBindTexture(GL_TEXTURE_2D, texture);
-
     // Set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -137,10 +124,39 @@ void initOpengl()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    int imgWidth, imgHeight, nrChannels;
+    unsigned char* imgData = stbi_load("textures/container.jpg", &imgWidth, &imgHeight, &nrChannels, 0);
+    if (!imgData)
+    {
+        std::cout << "Failed to load texture image" << std::endl;
+        return;
+    }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
     glGenerateMipmap(GL_TEXTURE_2D);
-
     stbi_image_free(imgData);
+    
+    // Setting up the awesomeface texture
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // Set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_set_flip_vertically_on_load(true);
+    imgData = stbi_load("textures/awesomeface.png", &imgWidth, &imgHeight, &nrChannels, 0);
+    if (!imgData)
+    {
+        std::cout << "Failed to load texture image" << std::endl;
+        return;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, imgData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(imgData);
+
+    // Draw in wireframe mode
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void renderLoop()
@@ -149,8 +165,13 @@ void renderLoop()
     glClear(GL_COLOR_BUFFER_BIT);
 
     ourShader->use();
+    ourShader->setInt("texture2", 1);
 
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
