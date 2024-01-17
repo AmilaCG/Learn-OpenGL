@@ -8,8 +8,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-#define V_SHADER_FILE_PATH "shaders/shader.vert"
-#define F_SHADER_FILE_PATH "shaders/shader.frag"
+#define V_SHADER_FILE_PATH "shaders/texture_shader.vert"
+#define F_SHADER_FILE_PATH "shaders/texture_shader.frag"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -18,15 +18,29 @@ void renderLoop();
 void deinitOpengl();
 
 float vertices[] = {
-    // positions         // colors
-     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+    // positions          // colors           // texture coords
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+};
+
+unsigned int indices[] = {
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
 };
 
 Shader* ourShader;
 unsigned int vao; // Vertex array object
 unsigned int vbo; // Vertex buffer object
+unsigned int ebo; // Element buffer object
+
+int imgWidth;
+int imgHeight;
+int nrChannels;
+unsigned char* imgData;
+
+unsigned int texture; // Texture object
 
 int main()
 {
@@ -54,6 +68,13 @@ int main()
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
+    imgData = stbi_load("textures/container.jpg", &imgWidth, &imgHeight, &nrChannels, 0);
+    if (!imgData)
+    {
+        std::cout << "Failed to load texture image" << std::endl;
+        return -1;
+    }
+
     initOpengl();
 
     while (!glfwWindowShouldClose(window))
@@ -78,6 +99,8 @@ void initOpengl()
 
     glGenVertexArrays(1, &vao); // Generate vertex array object
     glGenBuffers(1, &vbo);  // Generate vertex buffer object
+    glGenBuffers(1, &ebo);
+    glGenTextures(1, &texture);
 
     // Bind vertex array object first and then bind and set vertex buffers
     glBindVertexArray(vao);
@@ -87,16 +110,37 @@ void initOpengl()
     // Copy vertex data into the buffer
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    // Texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Draw in wireframe mode
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(imgData);
 }
 
 void renderLoop()
@@ -106,15 +150,16 @@ void renderLoop()
 
     ourShader->use();
 
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void deinitOpengl()
 {
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
     delete(ourShader);
     ourShader = nullptr;
 }
