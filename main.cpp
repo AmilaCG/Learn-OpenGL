@@ -1,20 +1,24 @@
 #include <iostream>
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-#include "stb_image.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-#define V_SHADER_FILE_PATH "shaders/texture_shader.vert"
+#define V_SHADER_FILE_PATH "shaders/transform_shader.vert"
 #define F_SHADER_FILE_PATH "shaders/texture_shader.frag"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+glm::mat4 transform();
 void deinitOpengl();
 
 float vertices[] = {
@@ -164,8 +168,13 @@ void renderLoop()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glm::mat4 trans = transform();
+
     ourShader->use();
     ourShader->setInt("texture2", 1);
+
+    unsigned int transformLoc = glGetUniformLocation(ourShader->getProgramID(), "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -174,6 +183,17 @@ void renderLoop()
 
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+glm::mat4 transform()
+{
+    glm::mat4 trans = glm::mat4(1.0f);
+    // First rotating around (0,0,0) and THEN translating/moving to (0.5,-0.5,0). We are writing
+    // this in the reverse order as below.
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    return trans;
 }
 
 void deinitOpengl()
