@@ -18,6 +18,9 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+glm::mat4 getModelMatrix();
+glm::mat4 getViewMatrix();
+glm::mat4 getProjectionMatrix();
 glm::mat4 transform();
 void deinitOpengl();
 
@@ -168,13 +171,20 @@ void renderLoop()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glm::mat4 trans = transform();
-
     ourShader->use();
     ourShader->setInt("texture2", 1);
 
-    unsigned int transformLoc = glGetUniformLocation(ourShader->getProgramID(), "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+    glm::mat4 model = getModelMatrix();
+    unsigned int modelLoc = glGetUniformLocation(ourShader->getProgramID(), "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+    glm::mat4 view = getViewMatrix();
+    unsigned int viewLoc = glGetUniformLocation(ourShader->getProgramID(), "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+    glm::mat4 projection = getProjectionMatrix();
+    unsigned int projectionLoc = glGetUniformLocation(ourShader->getProgramID(), "projection");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -183,6 +193,32 @@ void renderLoop()
 
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+glm::mat4 getModelMatrix()
+{
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    return model;
+}
+
+glm::mat4 getViewMatrix()
+{
+    glm::mat4 view = glm::mat4(1.0f);
+    // Note that we're translating the scene in the reverse direction of where we want to move
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    return view;
+}
+
+glm::mat4 getProjectionMatrix()
+{
+    glm::mat4 projection;
+    projection = 
+        glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+
+    return projection;
 }
 
 glm::mat4 transform()
