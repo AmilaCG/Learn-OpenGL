@@ -18,6 +18,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+glm::vec3 getCameraDirection(const float yaw, const float pitch);
 void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up);
 glm::mat4 getModelMatrix();
 glm::mat4 getModelMatrix(glm::vec3 position, float rotationDeg, glm::vec3 rotationAxis);
@@ -96,10 +97,15 @@ unsigned int ebo; // Element buffer object
 unsigned int texture; // Container texture object
 unsigned int texture2; // awesomeface texture
 
+const glm::vec3 world_front(0.0f, 0.0f, -1.0f);
+const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
+
 glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraDirection;
-glm::vec3 cameraRight;
-glm::vec3 cameraUp;
+glm::vec3 cameraFront = world_front;
+glm::vec3 cameraUp = world_up;
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main()
 {
@@ -131,6 +137,10 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         processInput(window);
 
         renderLoop();
@@ -236,16 +246,10 @@ void renderLoop()
     glBindVertexArray(vao);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    const glm::vec3 world_up_vector(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
-    glm::vec3 targetPosition(0.0f, 0.0f, 0.0f);
-
-    const float radius = 10.0f;
-    float camX = sin(glfwGetTime()) * radius;
-    float camZ = cos(glfwGetTime()) * radius;
-    cameraPosition = glm::vec3(camX, 0.0, camZ);
-
-    glm::mat4 view = glm::lookAt(cameraPosition, targetPosition, world_up_vector);
+    float yaw = -90.0f; // Rotation around Y axis
+    float pitch = 0.0f; // Rotation around X axis
+    glm::vec3 cameraDirection = getCameraDirection(yaw, pitch);
+    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
     ourShader->setMat4("view", view);
 
     glm::mat4 projection = getProjectionMatrix();
@@ -259,6 +263,16 @@ void renderLoop()
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+}
+
+glm::vec3 getCameraDirection(const float yaw, const float pitch)
+{
+    glm::vec3 cameraDirection;
+    cameraDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraDirection.y = sin(glm::radians(pitch));
+    cameraDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+    return cameraDirection;
 }
 
 void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up)
@@ -337,6 +351,24 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    const float camera_speed = 2.5f * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        cameraPosition += camera_speed * cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        cameraPosition -= camera_speed * cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * camera_speed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * camera_speed;
     }
 }
 
