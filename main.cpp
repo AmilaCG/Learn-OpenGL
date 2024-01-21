@@ -18,6 +18,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up);
 glm::mat4 getModelMatrix();
 glm::mat4 getModelMatrix(glm::vec3 position, float rotationDeg, glm::vec3 rotationAxis);
 glm::mat4 getViewMatrix();
@@ -94,6 +95,11 @@ unsigned int ebo; // Element buffer object
 
 unsigned int texture; // Container texture object
 unsigned int texture2; // awesomeface texture
+
+glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraDirection;
+glm::vec3 cameraRight;
+glm::vec3 cameraUp;
 
 int main()
 {
@@ -222,14 +228,6 @@ void renderLoop()
     ourShader->use();
     ourShader->setInt("texture2", 1);
 
-    glm::mat4 view = getViewMatrix();
-    unsigned int viewLoc = glGetUniformLocation(ourShader->getProgramID(), "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-    glm::mat4 projection = getProjectionMatrix();
-    unsigned int projectionLoc = glGetUniformLocation(ourShader->getProgramID(), "projection");
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glActiveTexture(GL_TEXTURE1);
@@ -237,6 +235,21 @@ void renderLoop()
 
     glBindVertexArray(vao);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    const glm::vec3 world_up_vector(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraPosition(0.0f, 0.0f, 3.0f);
+    glm::vec3 targetPosition(0.0f, 0.0f, 0.0f);
+
+    const float radius = 10.0f;
+    float camX = sin(glfwGetTime()) * radius;
+    float camZ = cos(glfwGetTime()) * radius;
+    cameraPosition = glm::vec3(camX, 0.0, camZ);
+
+    glm::mat4 view = glm::lookAt(cameraPosition, targetPosition, world_up_vector);
+    ourShader->setMat4("view", view);
+
+    glm::mat4 projection = getProjectionMatrix();
+    ourShader->setMat4("projection", projection);
 
     for (int i = 0; i < 10; i++)
     {
@@ -246,6 +259,22 @@ void renderLoop()
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+}
+
+void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up)
+{
+    // Camera forward direction (Note that this actually points the opposite 
+    // direction of what it's targeting)
+    const glm::vec3 origin(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraTarget(origin);
+    *direction = glm::normalize(position - cameraTarget);
+
+    // Camera right direction
+    const glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    *right = glm::normalize(glm::cross(worldUp, *direction));
+
+    // Camera up direction
+    *up = glm::cross(*direction, *right);
 }
 
 glm::mat4 getModelMatrix()
