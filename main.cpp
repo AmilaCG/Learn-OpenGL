@@ -18,6 +18,7 @@
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xPos, double yPos);
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
@@ -110,6 +111,8 @@ glm::vec3 cameraUp = world_up;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+float fov = 45.0f;
+
 float yaw = -90.0f; // Rotation around Y axis
 float pitch = 0.0f; // Rotation around X axis
 
@@ -145,6 +148,8 @@ int main()
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouseCallback);
+
+    glfwSetScrollCallback(window, scrollCallback);
 
     initOpengl();
 
@@ -331,7 +336,7 @@ glm::mat4 getProjectionMatrix()
 {
     glm::mat4 projection;
     projection = 
-        glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
     return projection;
 }
@@ -407,6 +412,13 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos)
 
     glm::vec3 cameraDirection = getCameraDirection(yaw, pitch);
     cameraFront = glm::normalize(cameraDirection);
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+    fov -= (float)yOffset;
+    if (fov < 1.0f) { fov = 1.0f; }
+    if (fov > 45.0f) { fov = 45.0f; }
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
