@@ -14,7 +14,10 @@
 #define V_SHADER_FILE_PATH "shaders/transform_shader.vert"
 #define F_SHADER_FILE_PATH "shaders/transform_shader.frag"
 
+#define MOUSE_SENSITIVITY 0.1f
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseCallback(GLFWwindow* window, double xPos, double yPos);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
@@ -107,6 +110,13 @@ glm::vec3 cameraUp = world_up;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+float yaw = -90.0f; // Rotation around Y axis
+float pitch = 0.0f; // Rotation around X axis
+
+bool isFirstMouse = true;
+float lastMouseX = WINDOW_WIDTH / 2;
+float lastMouseY = WINDOW_HEIGHT / 2;
+
 int main()
 {
     glfwInit();
@@ -132,6 +142,9 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouseCallback);
 
     initOpengl();
 
@@ -246,10 +259,7 @@ void renderLoop()
     glBindVertexArray(vao);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    float yaw = -90.0f; // Rotation around Y axis
-    float pitch = 0.0f; // Rotation around X axis
-    glm::vec3 cameraDirection = getCameraDirection(yaw, pitch);
-    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraDirection, cameraUp);
+    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
     ourShader->setMat4("view", view);
 
     glm::mat4 projection = getProjectionMatrix();
@@ -370,6 +380,33 @@ void processInput(GLFWwindow* window)
     {
         cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * camera_speed;
     }
+}
+
+void mouseCallback(GLFWwindow* window, double xPos, double yPos)
+{
+    if (isFirstMouse)
+    {
+        lastMouseX = xPos;
+        lastMouseY = yPos;
+        isFirstMouse = false;
+    }
+
+    float xOffset = xPos - lastMouseX;
+    float yOffset = lastMouseY - yPos;
+    lastMouseX = xPos;
+    lastMouseY = yPos;
+
+    xOffset *= MOUSE_SENSITIVITY;
+    yOffset *= MOUSE_SENSITIVITY;
+
+    yaw += xOffset;
+    pitch += yOffset;
+
+    if (pitch > 89.0f) { pitch = 89.0f; }
+    if (pitch < -89.0f) { pitch = -89.0f; }
+
+    glm::vec3 cameraDirection = getCameraDirection(yaw, pitch);
+    cameraFront = glm::normalize(cameraDirection);
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
