@@ -22,6 +22,7 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp);
 glm::vec3 getCameraDirection(const float yaw, const float pitch);
 void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up);
 glm::mat4 getModelMatrix();
@@ -264,7 +265,8 @@ void renderLoop()
     glBindVertexArray(vao);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+    //glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, world_up);
+    glm::mat4 view = myLookAt(cameraPosition, cameraPosition + cameraFront, world_up);
     ourShader->setMat4("view", view);
 
     glm::mat4 projection = getProjectionMatrix();
@@ -278,6 +280,25 @@ void renderLoop()
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+}
+
+glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp)
+{
+    glm::vec3 cameraForward =  glm::normalize(cameraPos - target);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraForward));
+    glm::vec3 cameraUp = glm::cross(cameraForward, cameraRight);
+
+    glm::mat4 rotation(1.0f);
+    rotation[0] = glm::vec4(cameraRight.x, cameraUp.x, cameraForward.x, 0.0f); // 0th column
+    rotation[1] = glm::vec4(cameraRight.y, cameraUp.y, cameraForward.y, 0.0f); // 1st column
+    rotation[2] = glm::vec4(cameraRight.z, cameraUp.z, cameraForward.z, 0.0f); // 2nd column
+
+    glm::mat4 translation(1.0f);
+    translation[3][0] = -cameraPos.x; // 3rd column, 0th row
+    translation[3][1] = -cameraPos.y;
+    translation[3][2] = -cameraPos.z;
+
+    return rotation * translation;
 }
 
 glm::vec3 getCameraDirection(const float yaw, const float pitch)
