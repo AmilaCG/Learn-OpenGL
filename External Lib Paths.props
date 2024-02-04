@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;$(ProjectDir)\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\vclib\glfw-3.3.9.bin.WIN64\include;$(SolutionDir)\external_include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\vclib\glfw-3.3.9.bin.WIN64\lib-vc2022;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
