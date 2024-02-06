@@ -225,7 +225,6 @@ void renderLoop()
     containerShader->setMat4("projection", projection);
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = getModelMatrix(glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, world_up);
     containerShader->setMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -233,9 +232,9 @@ void renderLoop()
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
-    auto lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-    model = glm::mat4(1.0f);
-    model = getModelMatrix(lightPos, 0.0f, world_up);
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+    model = glm::translate(model, lightPos);
+    model = glm::scale(model, glm::vec3(0.2f));
     lightShader->setMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
