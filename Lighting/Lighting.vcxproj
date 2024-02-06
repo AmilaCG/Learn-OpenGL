@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="..\external_src\glad.c" />
     <ClCompile Include="Lighting.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
