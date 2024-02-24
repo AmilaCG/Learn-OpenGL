@@ -8,13 +8,11 @@ out vec3 Normal;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat3 normalMat;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     FragPos = vec3(model * vec4(aPos, 1.0));
-    // Inversing matrices is a costly operation to do in
-    // shaders. Do this on the CPU and pass it to shaders
-    // via a uniform.
-    Normal = mat3(transpose(inverse(model))) * aNormal;
+    Normal = normalMat * aNormal;
 }

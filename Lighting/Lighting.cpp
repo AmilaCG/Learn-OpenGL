@@ -234,6 +234,9 @@ void renderLoop()
     glm::mat4 model = glm::mat4(1.0f);
     containerShader->setMat4("model", model);
 
+    glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
+    containerShader->setMat3("normalMat", normal);
+
     // Bind vertex data and draw the container
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);
