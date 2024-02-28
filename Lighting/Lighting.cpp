@@ -237,6 +237,8 @@ void renderLoop()
     glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
     containerShader->setMat3("normalMat", normal);
 
+    containerShader->setVec3("viewPos", cameraPosition);
+
     // Bind vertex data and draw the container
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);
