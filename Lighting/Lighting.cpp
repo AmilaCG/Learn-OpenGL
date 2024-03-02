@@ -227,10 +227,11 @@ void renderLoop()
     containerShader->setVec3("light.diffuse", glm::vec3(0.5f)); // darken diffuse light a bit
     containerShader->setVec3("light.specular", glm::vec3(1.0f));
 
-    containerShader->setVec3("material.ambient", glm::vec3(1.0f, 0.5f, 0.31f));
-    containerShader->setVec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    containerShader->setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    containerShader->setFloat("material.shininess", 32.0f);
+    // Gold material
+    containerShader->setVec3("material.ambient", glm::vec3(0.24725f, 0.1995f, 0.0745f));
+    containerShader->setVec3("material.diffuse", glm::vec3(0.75164f, 0.60648f, 0.22648f));
+    containerShader->setVec3("material.specular", glm::vec3(0.628281f, 0.555802f, 0.366065f));
+    containerShader->setFloat("material.shininess", 16.0f);
 
     glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, world_up);
     containerShader->setMat4("view", view);
