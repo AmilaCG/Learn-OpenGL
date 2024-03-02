@@ -233,12 +233,11 @@ void renderLoop()
     //containerShader->setVec3("material.specular", glm::vec3(0.628281f, 0.555802f, 0.366065f));
     //containerShader->setFloat("material.shininess", 16.0f);
 
-    glm::vec3 cubeLightColor;
-    cubeLightColor.x = sin((float)glfwGetTime() * 2.0f);
-    cubeLightColor.y = sin((float)glfwGetTime() * 0.7f);
-    cubeLightColor.z = sin((float)glfwGetTime() * 1.3f);
+    lightColor.x = sin((float)glfwGetTime() * 2.0f);
+    lightColor.y = sin((float)glfwGetTime() * 0.7f);
+    lightColor.z = sin((float)glfwGetTime() * 1.3f);
 
-    glm::vec3 diffuseColor = cubeLightColor * glm::vec3(0.8f);
+    glm::vec3 diffuseColor = lightColor * glm::vec3(0.8f);
     glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
 
     containerShader->setVec3("material.ambient", ambientColor);
