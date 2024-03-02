@@ -2,6 +2,7 @@
 out vec4 FragColor;
 in vec3 FragPos;
 in vec3 Normal;
+in vec2 TexCoords;
 
 uniform vec3 viewPos;
 
@@ -18,17 +19,16 @@ uniform Light light;
 
 struct Material
 {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    float shininess;
+    sampler2D diffuse;
+    vec3      specular;
+    float     shininess;
 };
 
 uniform Material material;
 
 void main()
 {
-    vec3 ambient = material.ambient * light.ambient;
+    vec3 ambient = texture(material.diffuse, TexCoords).rgb * light.ambient;
 
     vec3 norm = normalize(Normal);
     // Light direction from fragment to light
@@ -40,7 +40,7 @@ void main()
     vec3 reflectDir = reflect(-lightDir, norm);
 
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = (diff * material.diffuse) * light.diffuse;
+    vec3 diffuse = diff * texture(material.diffuse, TexCoords).rgb * light.diffuse;
 
     // Light reflection from fragment to camera/eye
     vec3 viewDir = normalize(viewPos - FragPos);
