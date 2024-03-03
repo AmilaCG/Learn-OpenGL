@@ -101,6 +101,7 @@ unsigned int lightVao;
 unsigned int vbo; // Vertex buffer object
 
 unsigned int textureDiffuse; // Diffuse map texture object
+unsigned int textureSpecular;
 
 const glm::vec3 world_front(0.0f, 0.0f, -1.0f);
 const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
@@ -209,6 +210,7 @@ void initOpengl()
     glEnableVertexAttribArray(2);
 
     textureDiffuse = loadTexture("textures/container_diffuse.png");
+    textureSpecular = loadTexture("textures/container_specular.png");
 
     glBindVertexArray(lightVao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -235,7 +237,8 @@ void renderLoop()
     containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
     containerShader->setVec3("light.specular", glm::vec3(1.0f));
 
-    containerShader->setVec3("material.specular", glm::vec3(0.5f));
+    containerShader->setInt("material.diffuse", 0); // GL_TEXTURE0
+    containerShader->setInt("material.specular", 1); // GL_TEXTURE1
     containerShader->setFloat("material.shininess", 64.0f);
 
     glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, world_up);
@@ -254,6 +257,8 @@ void renderLoop()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureDiffuse);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureSpecular);
 
     // Bind vertex data and draw the container
     glBindVertexArray(containerVao);
