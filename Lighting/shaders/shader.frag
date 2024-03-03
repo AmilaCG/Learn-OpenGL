@@ -8,7 +8,7 @@ uniform vec3 viewPos;
 
 struct Light
 {
-    vec3 position;
+    vec4 transform;
 
     vec3 ambient;
     vec3 diffuse;
@@ -31,8 +31,17 @@ void main()
     vec3 ambient = texture(material.diffuse, TexCoords).rgb * light.ambient;
 
     vec3 norm = normalize(Normal);
-    // Light direction from fragment to light
-    vec3 lightDir = normalize(light.position - FragPos);
+
+    vec3 lightDir;
+    if (light.transform.w == 1.0)
+    {
+        // Light direction from fragment to light
+        lightDir = normalize(light.transform.xyz - FragPos);
+    }
+    else if (light.transform.w == 0.0)
+    {
+        lightDir = normalize(-light.transform.xyz);
+    }
 
     // The reflect function expects the first vector to point
     // from the light source towards the fragment's position. Therefore,

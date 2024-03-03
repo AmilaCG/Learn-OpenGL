@@ -8,8 +8,8 @@
 
 #include "Shader.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 
 #define V_CONTAINER_SHADER_PATH "shaders/shader.vert"
 #define F_CONTAINER_SHADER_PATH "shaders/shader.frag"
@@ -232,8 +232,9 @@ void renderLoop()
     // Shader setup of the container/cube
     containerShader->use();
 
-    containerShader->setVec3("light.position", lightPos);
-    containerShader->setVec3("light.ambient", glm::vec3(0.4f));
+    //containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f));
+    containerShader->setVec4("light.transform", glm::vec4(-0.2f, -1.0f, -0.3f, 0.0f)); // Directional
+    containerShader->setVec3("light.ambient", glm::vec3(0.2f));
     containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
     containerShader->setVec3("light.specular", glm::vec3(1.0f));
 
@@ -247,12 +248,6 @@ void renderLoop()
     glm::mat4 projection = getProjectionMatrix();
     containerShader->setMat4("projection", projection);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    containerShader->setMat4("model", model);
-
-    glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
-    containerShader->setMat3("normalMat", normal);
-
     containerShader->setVec3("viewPos", cameraPosition);
 
     glActiveTexture(GL_TEXTURE0);
@@ -262,7 +257,17 @@ void renderLoop()
 
     // Bind vertex data and draw the container
     glBindVertexArray(containerVao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for (int i = 0; i < 10; i++)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = getModelMatrix(cubePositions[i], 20.0f * i, glm::vec3(1.0f, 0.3f, 0.5f));
+        containerShader->setMat4("model", model);
+
+        glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
+        containerShader->setMat3("normalMat", normal);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // Shader setup of the light source
     lightShader->use();
@@ -271,6 +276,7 @@ void renderLoop()
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
+    glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, lightPos);
     model = glm::scale(model, glm::vec3(0.2f));
     lightShader->setMat4("model", model);
