@@ -237,6 +237,7 @@ void renderLoop()
     containerShader->setVec4("light.transform", glm::vec4(cameraPosition, 1.0f)); // Spot
     containerShader->setVec3("light.spotDirection", glm::vec3(cameraFront));
     containerShader->setFloat("light.spotCutOff", glm::cos(glm::radians(12.5f)));
+    containerShader->setFloat("light.spotOuterCutOff", glm::cos(glm::radians(18.5f)));
 
     containerShader->setVec3("light.ambient", glm::vec3(0.2f));
     containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
