@@ -232,8 +232,12 @@ void renderLoop()
     // Shader setup of the container/cube
     containerShader->use();
 
-    containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f)); // Point
+    //containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f)); // Point
     //containerShader->setVec4("light.transform", glm::vec4(-0.2f, -1.0f, -0.3f, 0.0f)); // Directional
+    containerShader->setVec4("light.transform", glm::vec4(cameraPosition, 1.0f)); // Spot
+    containerShader->setVec3("light.spotDirection", glm::vec3(cameraFront));
+    containerShader->setFloat("light.spotCutOff", glm::cos(glm::radians(12.5f)));
+
     containerShader->setVec3("light.ambient", glm::vec3(0.2f));
     containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
     containerShader->setVec3("light.specular", glm::vec3(1.0f));

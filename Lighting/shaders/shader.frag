@@ -9,6 +9,8 @@ uniform vec3 viewPos;
 struct Light
 {
     vec4 transform;
+    vec3 spotDirection;
+    float spotCutOff;
 
     vec3 ambient;
     vec3 diffuse;
@@ -45,6 +47,13 @@ void main()
     else if (light.transform.w == 0.0)
     {
         lightDir = normalize(-light.transform.xyz);
+    }
+
+    float theta = dot(lightDir, normalize(-light.spotDirection));
+    if (theta <= light.spotCutOff)
+    {
+        FragColor = vec4(ambient, 1.0);
+        return;
     }
 
     // The reflect function expects the first vector to point
