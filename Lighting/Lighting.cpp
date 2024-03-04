@@ -232,11 +232,16 @@ void renderLoop()
     // Shader setup of the container/cube
     containerShader->use();
 
-    //containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f));
-    containerShader->setVec4("light.transform", glm::vec4(-0.2f, -1.0f, -0.3f, 0.0f)); // Directional
+    containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f)); // Point
+    //containerShader->setVec4("light.transform", glm::vec4(-0.2f, -1.0f, -0.3f, 0.0f)); // Directional
     containerShader->setVec3("light.ambient", glm::vec3(0.2f));
     containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
     containerShader->setVec3("light.specular", glm::vec3(1.0f));
+
+    // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
+    containerShader->setFloat("light.constant", 1.0f);
+    containerShader->setFloat("light.diffuse", 0.09f);
+    containerShader->setFloat("light.quadratic", 0.032f);
 
     containerShader->setInt("material.diffuse", 0); // GL_TEXTURE0
     containerShader->setInt("material.specular", 1); // GL_TEXTURE1
