@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Getting started", "Getting started\Getting started.vcxproj", "{8EABD673-ED14-4724-A3C1-E1DEBD2C52A8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Getting started", "00 Getting started\Getting started.vcxproj", "{8EABD673-ED14-4724-A3C1-E1DEBD2C52A8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lighting", "Lighting\Lighting.vcxproj", "{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lighting", "01 Lighting\Lighting.vcxproj", "{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Model loading", "Model loading\Model loading.vcxproj", "{80B064F6-5849-41FC-98ED-7B8746A3A35D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Model loading", "02 Model loading\Model loading.vcxproj", "{80B064F6-5849-41FC-98ED-7B8746A3A35D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
