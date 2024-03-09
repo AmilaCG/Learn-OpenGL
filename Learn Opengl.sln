@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Getting started", "Getting 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Lighting", "Lighting\Lighting.vcxproj", "{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Model loading", "Model loading\Model loading.vcxproj", "{80B064F6-5849-41FC-98ED-7B8746A3A35D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}.Release|x64.Build.0 = Release|x64
 		{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}.Release|x86.ActiveCfg = Release|Win32
 		{6B29C299-9E3F-4E16-AD75-20C0ADA9B18A}.Release|x86.Build.0 = Release|Win32
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Debug|x64.ActiveCfg = Debug|x64
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Debug|x64.Build.0 = Debug|x64
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Debug|x86.ActiveCfg = Debug|Win32
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Debug|x86.Build.0 = Debug|Win32
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Release|x64.ActiveCfg = Release|x64
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Release|x64.Build.0 = Release|x64
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Release|x86.ActiveCfg = Release|Win32
+		{80B064F6-5849-41FC-98ED-7B8746A3A35D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
