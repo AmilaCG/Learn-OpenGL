@@ -103,6 +103,13 @@ glm::vec3 pointLightPositions[] = {
     glm::vec3(0.0f,  0.0f, -3.0f)
 };
 
+glm::vec3 pointLightColors[] = {
+    glm::vec3(1.0f, 1.0f, 1.0f),
+    glm::vec3(1.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    glm::vec3(0.0f, 0.0f, 1.0f)
+};
+
 Shader* containerShader;
 Shader* lightShader;
 unsigned int containerVao; // Vertex array object
@@ -278,7 +285,6 @@ void renderLoop()
 
     // Shader setup of the light source
     lightShader->use();
-    lightShader->setVec3("lightColor", lightColor);
 
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
@@ -290,6 +296,8 @@ void renderLoop()
         model = glm::translate(model, lightPosition);
         model = glm::scale(model, glm::vec3(0.2f));
         lightShader->setMat4("model", model);
+
+        lightShader->setVec3("lightColor", pointLightColors[i]);
 
         // Bind vertex data and draw the light source
         glBindVertexArray(lightVao);
@@ -318,9 +326,9 @@ void setLightParameters()
         oss << "pointLights[" << i << "]";
         std::string pointLight = oss.str();
 
-        containerShader->setVec3(pointLight + ".position", pointLightPositions[i]);
-        containerShader->setVec3(pointLight + ".ambient", ambient);
-        containerShader->setVec3(pointLight + ".diffuse", diffuse);
+        containerShader->setVec3(pointLight + ".position", position);
+        containerShader->setVec3(pointLight + ".ambient", ambient * pointLightColors[i]);
+        containerShader->setVec3(pointLight + ".diffuse", diffuse * pointLightColors[i]);
         containerShader->setVec3(pointLight + ".specular", specular);
         // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
         containerShader->setFloat(pointLight + ".constant", 1.0f);
