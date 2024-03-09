@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -25,6 +26,7 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
+void setLightParameters();
 glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp);
 glm::vec3 getCameraDirection(const float yaw, const float pitch);
 void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up);
@@ -92,6 +94,13 @@ glm::vec3 cubePositions[] = {
     glm::vec3(1.5f,  2.0f, -2.5f),
     glm::vec3(1.5f,  0.2f, -1.5f),
     glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+glm::vec3 pointLightPositions[] = {
+    glm::vec3(0.7f,  0.2f,  2.0f),
+    glm::vec3(2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f, 2.0f, -12.0f),
+    glm::vec3(0.0f,  0.0f, -3.0f)
 };
 
 Shader* containerShader;
@@ -232,21 +241,7 @@ void renderLoop()
     // Shader setup of the container/cube
     containerShader->use();
 
-    //containerShader->setVec4("light.transform", glm::vec4(lightPos, 1.0f)); // Point
-    //containerShader->setVec4("light.transform", glm::vec4(-0.2f, -1.0f, -0.3f, 0.0f)); // Directional
-    containerShader->setVec4("light.transform", glm::vec4(cameraPosition, 1.0f)); // Spot
-    containerShader->setVec3("light.spotDirection", glm::vec3(cameraFront));
-    containerShader->setFloat("light.spotCutOff", glm::cos(glm::radians(12.5f)));
-    containerShader->setFloat("light.spotOuterCutOff", glm::cos(glm::radians(18.5f)));
-
-    containerShader->setVec3("light.ambient", glm::vec3(0.2f));
-    containerShader->setVec3("light.diffuse", glm::vec3(1.0f));
-    containerShader->setVec3("light.specular", glm::vec3(1.0f));
-
-    // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
-    containerShader->setFloat("light.constant", 1.0f);
-    containerShader->setFloat("light.diffuse", 0.09f);
-    containerShader->setFloat("light.quadratic", 0.032f);
+    setLightParameters();
 
     containerShader->setInt("material.diffuse", 0); // GL_TEXTURE0
     containerShader->setInt("material.specular", 1); // GL_TEXTURE1
@@ -265,18 +260,20 @@ void renderLoop()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textureSpecular);
 
-    // Bind vertex data and draw the container
-    glBindVertexArray(containerVao);
-    for (int i = 0; i < 10; i++)
+    int i = 0;
+    for (const glm::vec3& cubePosition : cubePositions)
     {
         glm::mat4 model = glm::mat4(1.0f);
-        model = getModelMatrix(cubePositions[i], 20.0f * i, glm::vec3(1.0f, 0.3f, 0.5f));
+        model = getModelMatrix(cubePosition, 20.0f * i, glm::vec3(1.0f, 0.3f, 0.5f));
         containerShader->setMat4("model", model);
 
         glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
         containerShader->setMat3("normalMat", normal);
 
+        // Bind vertex data and draw the container
+        glBindVertexArray(containerVao);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        i++;
     }
 
     // Shader setup of the light source
@@ -286,14 +283,63 @@ void renderLoop()
     lightShader->setMat4("view", view);
     lightShader->setMat4("projection", projection);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, lightPos);
-    model = glm::scale(model, glm::vec3(0.2f));
-    lightShader->setMat4("model", model);
+    i = 0;
+    for (const glm::vec3& lightPosition : pointLightPositions)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, lightPosition);
+        model = glm::scale(model, glm::vec3(0.2f));
+        lightShader->setMat4("model", model);
 
-    // Bind vertex data and draw the light source
-    glBindVertexArray(lightVao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Bind vertex data and draw the light source
+        glBindVertexArray(lightVao);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        i++;
+    }
+}
+
+void setLightParameters()
+{
+    glm::vec3 ambient(0.05);
+    glm::vec3 diffuse(0.8f);
+    glm::vec3 specular(1.0f);
+
+    // Directional light
+    containerShader->setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+    containerShader->setVec3("dirLight.ambient", ambient);
+    containerShader->setVec3("dirLight.diffuse", glm::vec3(0.5f));
+    containerShader->setVec3("dirLight.specular", specular);
+
+    // Point light
+    int i = 0;
+    for (const glm::vec3& position : pointLightPositions)
+    {
+        std::ostringstream oss;
+        oss << "pointLights[" << i << "]";
+        std::string pointLight = oss.str();
+
+        containerShader->setVec3(pointLight + ".position", pointLightPositions[i]);
+        containerShader->setVec3(pointLight + ".ambient", ambient);
+        containerShader->setVec3(pointLight + ".diffuse", diffuse);
+        containerShader->setVec3(pointLight + ".specular", specular);
+        // https://wiki.ogre3d.org/tiki-index.php?page=-Point+Light+Attenuation
+        containerShader->setFloat(pointLight + ".constant", 1.0f);
+        containerShader->setFloat(pointLight + ".diffuse", 0.09f);
+        containerShader->setFloat(pointLight + ".quadratic", 0.032f);
+        i++;
+    }
+
+    // Spot light
+    containerShader->setVec3("spotLight.position", glm::vec3(cameraPosition));
+    containerShader->setVec3("spotLight.direction", glm::vec3(cameraFront));
+    containerShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    containerShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(18.5f)));
+    containerShader->setVec3("spotLight.ambient", glm::vec3(0.2f));
+    containerShader->setVec3("spotLight.diffuse", diffuse);
+    containerShader->setVec3("spotLight.specular", specular);
+    containerShader->setFloat("spotLight.constant", 1.0f);
+    containerShader->setFloat("spotLight.diffuse", 0.09f);
+    containerShader->setFloat("spotLight.quadratic", 0.032f);
 }
 
 glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp)
