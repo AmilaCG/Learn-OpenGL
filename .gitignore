@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Auto generated files via the vcpkg manifest
+vcpkg_installed
