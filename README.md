@@ -16,6 +16,6 @@ My journey on https://learnopengl.com/
 ## How to set up
 * Clone the repository
   ```
-  git clone git@github.com:amila93/Learn-OpenGL.git
+  git clone git@github.com:PixViz/Learn-OpenGL.git
   ```
 * Open `Learn-OpenGL/Learn Opengl.sln` using Visual Studio
