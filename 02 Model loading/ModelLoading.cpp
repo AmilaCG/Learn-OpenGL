@@ -23,14 +23,10 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 void initOpengl();
 void renderLoop();
-glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp);
 glm::vec3 getCameraDirection(const float yaw, const float pitch);
 void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm::vec3* up);
-glm::mat4 getModelMatrix();
 glm::mat4 getModelMatrix(glm::vec3 position, float rotationDeg, glm::vec3 rotationAxis);
-glm::mat4 getViewMatrix();
 glm::mat4 getProjectionMatrix();
-glm::mat4 transform();
 void deinitOpengl();
 
 Shader* backpackShader;
@@ -143,25 +139,6 @@ void renderLoop()
     guitarBackpackModel->Draw(*backpackShader);
 }
 
-glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp)
-{
-    glm::vec3 cameraForward = glm::normalize(cameraPos - target);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraForward));
-    glm::vec3 cameraUp = glm::cross(cameraForward, cameraRight);
-
-    glm::mat4 rotation(1.0f);
-    rotation[0] = glm::vec4(cameraRight.x, cameraUp.x, cameraForward.x, 0.0f); // 0th column
-    rotation[1] = glm::vec4(cameraRight.y, cameraUp.y, cameraForward.y, 0.0f); // 1st column
-    rotation[2] = glm::vec4(cameraRight.z, cameraUp.z, cameraForward.z, 0.0f); // 2nd column
-
-    glm::mat4 translation(1.0f);
-    translation[3][0] = -cameraPos.x; // 3rd column, 0th row
-    translation[3][1] = -cameraPos.y;
-    translation[3][2] = -cameraPos.z;
-
-    return rotation * translation;
-}
-
 glm::vec3 getCameraDirection(const float yaw, const float pitch)
 {
     glm::vec3 cameraDirection;
@@ -188,14 +165,6 @@ void cameraSetup(glm::vec3 position, glm::vec3* direction, glm::vec3* right, glm
     *up = glm::cross(*direction, *right);
 }
 
-glm::mat4 getModelMatrix()
-{
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-    return model;
-}
-
 glm::mat4 getModelMatrix(glm::vec3 position, float rotationDeg, glm::vec3 rotationAxis)
 {
     glm::mat4 model = glm::mat4(1.0f);
@@ -205,15 +174,6 @@ glm::mat4 getModelMatrix(glm::vec3 position, float rotationDeg, glm::vec3 rotati
     return model;
 }
 
-glm::mat4 getViewMatrix()
-{
-    glm::mat4 view = glm::mat4(1.0f);
-    // Note that we're translating the scene in the reverse direction of where we want to move
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-    return view;
-}
-
 glm::mat4 getProjectionMatrix()
 {
     glm::mat4 projection;
@@ -221,17 +181,6 @@ glm::mat4 getProjectionMatrix()
         glm::perspective(glm::radians(fov), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
 
     return projection;
-}
-
-glm::mat4 transform()
-{
-    glm::mat4 trans = glm::mat4(1.0f);
-    // First rotating around (0,0,0) and THEN translating/moving to (0.5,-0.5,0). We are writing
-    // this in the reverse order as below.
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    return trans;
 }
 
 void deinitOpengl()
