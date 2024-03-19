@@ -4,6 +4,9 @@ My journey on https://learnopengl.com/
 ## End of the Lighting chapter
 ![Lighting demo](README_resources/LightingDemo.gif)
 
+## End of the Model Loading chapter
+![Model loading demo](README_resources/ModelLoadingDemo.gif)
+
 ## Prerequisites on Windows
 1. [Git](https://git-scm.com/download/win)
 2. OpenGL 3.3 or above supported graphics hardware
