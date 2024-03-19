@@ -34,7 +34,7 @@ glm::mat4 transform();
 void deinitOpengl();
 
 Shader* backpackShader;
-Model* guitarBackpack;
+Model* guitarBackpackModel;
 
 const glm::vec3 world_front(0.0f, 0.0f, -1.0f);
 const glm::vec3 world_up(0.0f, 1.0f, 0.0f);
@@ -115,7 +115,7 @@ void initOpengl()
 {
     glEnable(GL_DEPTH_TEST);
 
-    guitarBackpack = new Model("models/backpack.obj");
+    guitarBackpackModel = new Model("models/backpack.obj");
     backpackShader = new Shader(V_SHADER_PATH, F_SHADER_PATH);
 
     // Draw in wireframe mode
@@ -140,7 +140,7 @@ void renderLoop()
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
     backpackShader->setMat4("model", model);
 
-    guitarBackpack->Draw(*backpackShader);
+    guitarBackpackModel->Draw(*backpackShader);
 }
 
 glm::mat4 myLookAt(glm::vec3 cameraPos, glm::vec3 target, glm::vec3 worldUp)
@@ -238,6 +238,8 @@ void deinitOpengl()
 {
     delete(backpackShader);
     backpackShader = nullptr;
+    delete(guitarBackpackModel);
+    guitarBackpackModel = nullptr;
 }
 
 void processInput(GLFWwindow* window)
