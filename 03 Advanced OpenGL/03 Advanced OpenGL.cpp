@@ -84,6 +84,8 @@ int main()
     glEnable(GL_STENCIL_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+    glEnable(GL_CULL_FACE);
+
     // build and compile shaders
     // -------------------------
     Shader shader("shaders/1.1.depth_testing.vert", "shaders/1.1.depth_testing.frag");
@@ -92,59 +94,61 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float cubeVertices[] = {
-        // positions          // texture Coords
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+        // Back face
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // Bottom-left
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom-right
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, // bottom-left
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+        // Front face
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, // top-right
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, // top-left
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+        // Left face
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-left
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-left
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-right
+        // Right face
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // bottom-right
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // top-left
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-left
+         // Bottom face
+         -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+          0.5f, -0.5f, -0.5f,  1.0f, 1.0f, // top-left
+          0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+          0.5f, -0.5f,  0.5f,  1.0f, 0.0f, // bottom-left
+         -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, // bottom-right
+         -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, // top-right
+         // Top face
+         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+          0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+          0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top-right
+          0.5f,  0.5f,  0.5f,  1.0f, 0.0f, // bottom-right
+         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, // top-left
+         -0.5f,  0.5f,  0.5f,  0.0f, 0.0f  // bottom-left
     };
+
     float planeVertices[] = {
         // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+       -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+        5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+        5.0f, -0.5f, -5.0f,  2.0f, 2.0f,
 
          5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f
     };
+
     float grassVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
         0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
@@ -155,6 +159,7 @@ int main()
         1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
         1.0f,  0.5f,  0.0f,  1.0f,  0.0f
     };
+
     // cube VAO
     unsigned int cubeVAO, cubeVBO;
     glGenVertexArrays(1, &cubeVAO);
